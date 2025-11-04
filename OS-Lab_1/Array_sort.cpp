@@ -14,6 +14,8 @@ void *sort_array(void *arg) {
     return nullptr;
 }
 
+//start
+
 int main() {
     int arr[] = {5, 2, 9, 1, 6};
     int n = sizeof(arr)/sizeof(arr[0]);
