@@ -1,12 +1,12 @@
 #include <iostream>
-#include <cstdio> 
+#include <cstdio> // For rename()
 using namespace std;
 
 int main() {
-    if (remove("example.txt") == 0) {
-        cout << "File deleted successfully.\n";
+    if (rename("copy_example.txt", "moved_example.txt") == 0) {
+        cout << "File moved/renamed successfully.\n";
     } else {
-        cout << "Error deleting the file.\n";
+        cout << "Error moving/renaming file.\n";
     }
     return 0;
 }
