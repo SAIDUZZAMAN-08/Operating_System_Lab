@@ -6,50 +6,52 @@
 #include <unistd.h>
 using namespace std;
 
+int item = 0;
 const int Buff = 5;
 vector<int> buff;
 mutex mtx;
 
-sem_t emt; // empty slots
-sem_t full;  // filled slots
+sem_t emt;  
+sem_t full; 
 
 void producer(int id) {
-    int item = 0;
     while (true) {
-        sleep(1); // simulate production time
-        item++;
+        sleep(1); 
+        sem_wait(&emt);  
 
-        sem_wait(&emt); // wait for empty slot
-        mtx.lock();
+        int producedItem;
+        {
+            lock_guard<mutex> lock(mtx); 
+            item++;
+            producedItem = item;
+            buff.push_back(producedItem);
+            cout << "Producer " << id << " produced: " << producedItem << endl;
+        }
 
-        buff.push_back(item);
-        cout << "Producer " << id << " produced: " << item << endl;
-
-        mtx.unlock();
-        sem_post(&full); // signal that a new full slot is available
+        sem_post(&full); 
     }
 }
 
 void consumer(int id) {
-    int item;
     while (true) {
-        sem_wait(&full); // wait for full slot
-        mtx.lock();
+        sem_wait(&full); 
 
-        item = buff.back();
-        buff.pop_back();
-        cout << "Consumer " << id << " consumed: " << item << endl;
+        int consumedItem;
+        {
+            lock_guard<mutex> lock(mtx); 
+            consumedItem = buff.back();
+            buff.pop_back();
+            cout << "Consumer " << id << " consumed: " << consumedItem << endl;
+        }
 
-        mtx.unlock();
-        sem_post(&emt); // signal that an empty slot is available
-
-        sleep(1); // simulate consumption time
+        sem_post(&emt); 
+        sleep(1);       
     }
 }
 
 int main() {
     sem_init(&emt, 0, Buff); // Buff empty slots initially
-    sem_init(&full, 0, 0);     // 0 full slots initially
+    sem_init(&full, 0, 0);   // 0 full slots initially
 
     thread p1(producer, 1);
     thread p2(producer, 2);
