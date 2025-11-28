@@ -1,58 +1,46 @@
-#include<stdio.h>
-#include<iostream>
-#include<pthread.h>
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <semaphore.h>
+#include <vector>
+#include <unistd.h>
+#include <pthread.h>
+#include <unistd.h>
 using namespace std;
+#define MAX_NUM 10
+mutex mtx;
+sem_t a;
+sem_t b;
 
-struct thread_data{
+void *print_even(void *arg) {
 
-    int *arr;
-    int start;
-    int fact;
-};
-
-void*factorial(void*arg){
-
-    thread_data *data=(thread_data*)arg;
-
-    int n=data->arr[data->start];
-    data->fact=1;
-    
-    for(int i=n;i>1;i--){
-        data->fact*=i;
-    }
-
-    printf("Factorial of %d is: %d \n",n,data->fact);
-    return NULL;
-    
+for (int i = 0; i <= MAX_NUM; i += 2) {
+sleep(2);
+sem_wait(&a); 
+printf("Even: %d\n", i);
+sem_post(&b);
 }
 
-int main(){
-
-    int arr[3]={3,4,5};
-
-    // for(int i=0;i<3;i++){
-    //     scanf("%d",&arr[i]);
-    // }
-
-    thread_data d1,d2,d3;
-    d1={arr,0,1};
-    d2={arr,1,1};
-    d3={arr,2,1};
-
-    pthread_t thread1,thread2,thread3;
-
-    pthread_create(&thread1,NULL,factorial,(void*)&d1);
-    pthread_create(&thread2,NULL,factorial,(void*)&d2);
-    pthread_create(&thread3,NULL,factorial,(void*)&d3);
-
-    pthread_join(thread1,NULL);
-    pthread_join(thread2,NULL);
-    pthread_join(thread3,NULL);
-
-    int t=d1.fact+ d2.fact+d3.fact;
-    printf("The some of all factorial is: %d ",t);
-
-
+return NULL;
 }
 
+void *print_odd(void *arg) {
+for (int i = 1; i <= MAX_NUM; i += 2) {
+sleep(1); 
+sem_wait(&b);
+printf("Odd : %d\n", i);
+sem_post(&a);
+}
+return NULL;
+}
+int main(void) {
+sem_init(&a, 0, 1);
+sem_init(&b, 0, 0);    
 
+pthread_t t1, t2;
+pthread_create(&t1, NULL, print_even, NULL);
+pthread_create(&t2, NULL, print_odd, NULL);
+pthread_join(t1, NULL);
+pthread_join(t2, NULL);
+return 0;
+}
