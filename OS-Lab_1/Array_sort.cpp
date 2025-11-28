@@ -34,3 +34,48 @@ int main() {
 
     return 0;
 }
+
+
+
+
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Function to sort a portion of the array
+void sortPart(vector<int>& arr, int start, int end) {
+    sort(arr.begin() + start, arr.begin() + end);
+}
+
+int main() {
+    vector<int> arr = {5, 2, 9, 1, 6, 3, 8, 4};
+    int n = arr.size();
+
+    // Split array into two halves
+    int mid = n / 2;
+
+    // Create two threads to sort each half
+    thread t1(sortPart, ref(arr), 0, mid);
+    thread t2(sortPart, ref(arr), mid, n);
+
+    // Wait for threads to finish
+    t1.join();
+    t2.join();
+
+    // Merge the two sorted halves
+    vector<int> sortedArr(n);
+    merge(arr.begin(), arr.begin() + mid, arr.begin() + mid, arr.end(), sortedArr.begin());
+
+    // Print sorted array
+    cout << "Sorted array: ";
+    for (int num : sortedArr) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+
